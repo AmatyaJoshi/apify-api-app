@@ -4,7 +4,28 @@ export interface Actor {
   title: string;
   description: string;
   username?: string;
-  inputSchema?: any;
+  inputSchema?: JsonSchema;
+}
+
+export interface JsonSchema {
+  type: string;
+  title?: string;
+  description?: string;
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+  [key: string]: unknown;
+}
+
+export interface JsonSchemaProperty {
+  type: string;
+  title?: string;
+  description?: string;
+  default?: unknown;
+  enum?: unknown[];
+  items?: JsonSchemaProperty;
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+  [key: string]: unknown;
 }
 
 export interface ActorRun {
@@ -21,7 +42,7 @@ export interface ActorRun {
 export interface ExecutionResult {
   runId: string;
   status: string;
-  results: any[];
+  results: Record<string, unknown>[];
   stats: {
     itemCount: number;
     executionTime: number;
@@ -38,7 +59,7 @@ export interface User {
     avatarUrl: string;
     website: string;
   };
-  plan: string | { id: string; tier: string; [key: string]: any };
+  plan: string | { id: string; tier: string; [key: string]: unknown };
   usage: {
     monthlyUsageUsd?: number;
     monthlyLimitUsd?: number;

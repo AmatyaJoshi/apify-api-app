@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+interface StoreActor {
+  id: string;
+  name: string;
+  title?: string;
+  description?: string;
+  username?: string;
+  isPublic?: boolean;
+  [key: string]: unknown;
+}
+
+interface ApiResponse {
+  data: {
+    items: StoreActor[];
+  };
+}
+
+export async function GET(_request: NextRequest) {
   try {
     console.log('Fetching store actors...');
     
@@ -11,18 +27,18 @@ export async function GET(request: NextRequest) {
       },
     });
     
-    let storeActors = [];
+    let storeActors: StoreActor[] = [];
     
     if (response.ok) {
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
       console.log('Apify API response status:', response.status);
       
       if (data.data && data.data.items && Array.isArray(data.data.items)) {
         console.log('Found', data.data.items.length, 'actors from API');
         storeActors = data.data.items
-          .filter((actor: any) => actor.isPublic && actor.id) // Only public actors with valid IDs
+          .filter((actor: StoreActor) => actor.isPublic && actor.id) // Only public actors with valid IDs
           .slice(0, 20) // Limit to 20 actors
-          .map((actor: any) => ({
+          .map((actor: StoreActor) => ({
             id: actor.id,
             name: actor.name,
             title: actor.title || actor.name,
@@ -79,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: storeActors.map((actor: any) => ({
+      data: storeActors.map((actor: StoreActor) => ({
         id: actor.id || `${actor.username}/${actor.name}`,
         name: actor.name,
         title: actor.title || actor.name,
@@ -87,10 +103,11 @@ export async function GET(request: NextRequest) {
         username: actor.username || 'apify',
       }))
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching store actors:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch store actors';
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch store actors' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

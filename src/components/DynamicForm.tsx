@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Play } from 'lucide-react';
+import { JsonSchema, JsonSchemaProperty } from '@/types/apify';
 
 interface DynamicFormProps {
-  schema: any;
-  onSubmit: (data: any) => void;
+  schema: JsonSchema;
+  onSubmit: (data: Record<string, unknown>) => void;
   loading: boolean;
 }
 
@@ -15,13 +16,13 @@ interface FormField {
   title: string;
   description?: string;
   required: boolean;
-  default?: any;
+  default?: unknown;
   enum?: string[];
   format?: string;
 }
 
 export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormProps) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [fields, setFields] = useState<FormField[]>([]);
 
   useEffect(() => {
@@ -33,22 +34,22 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
       return;
     }
 
-    const formFields: FormField[] = Object.entries(schema.properties).map(([key, property]: [string, any]) => ({
+    const formFields: FormField[] = Object.entries(schema.properties || {}).map(([key, property]: [string, JsonSchemaProperty]) => ({
       key,
       type: property.type || 'string',
       title: property.title || key,
       description: property.description,
       required: schema.required?.includes(key) || false,
       default: property.default,
-      enum: property.enum,
-      format: property.format,
+      enum: Array.isArray(property.enum) ? property.enum.map(String) : undefined,
+      format: typeof property.format === 'string' ? property.format : undefined,
     }));
 
     console.log('Generated form fields:', formFields);
     setFields(formFields);
 
     // Set default values
-    const defaultData: Record<string, any> = {};
+    const defaultData: Record<string, unknown> = {};
     formFields.forEach(field => {
       if (field.default !== undefined) {
         defaultData[field.key] = field.default;
@@ -90,7 +91,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
     onSubmit(formData);
   };
 
-  const handleFieldChange = (key: string, value: any) => {
+  const handleFieldChange = (key: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [key]: value,
@@ -115,7 +116,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
               type="checkbox"
               {...commonProps}
               className="mr-3 h-5 w-5 text-blue-500 focus:ring-blue-500 border-slate-500 rounded bg-slate-600"
-              checked={value || false}
+              checked={Boolean(value)}
               onChange={(e) => handleFieldChange(field.key, e.target.checked)}
             />
             <label htmlFor={field.key} className="text-sm text-gray-200 font-medium">
@@ -130,7 +131,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
           <input
             type="number"
             {...commonProps}
-            value={value}
+            value={typeof value === 'number' ? value : (value ? Number(value) : '')}
             step={field.type === 'integer' ? '1' : 'any'}
             onChange={(e) => handleFieldChange(field.key, field.type === 'integer' ? parseInt(e.target.value) || 0 : parseFloat(e.target.value) || 0)}
           />
@@ -139,9 +140,13 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
       case 'array':
         const displayValue = Array.isArray(value) 
           ? (field.key === 'startUrls' && value.length > 0 && typeof value[0] === 'object' 
-              ? value.map((item: any) => item.url || item).join('\n')
-              : value.join('\n'))
-          : (value || '');
+              ? value.map((item: unknown) => 
+                  typeof item === 'object' && item !== null && 'url' in item 
+                    ? (item as { url: string }).url 
+                    : String(item)
+                ).join('\n')
+              : value.map(String).join('\n'))
+          : String(value || '');
           
         return (
           <textarea
@@ -186,7 +191,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
           return (
             <select
               {...commonProps}
-              value={value}
+              value={String(value || '')}
               onChange={(e) => handleFieldChange(field.key, e.target.value)}
             >
               <option value="">Select an option</option>
@@ -204,7 +209,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
             <input
               type="url"
               {...commonProps}
-              value={value}
+              value={String(value || '')}
               placeholder="https://example.com"
               onChange={(e) => handleFieldChange(field.key, e.target.value)}
             />
@@ -215,7 +220,7 @@ export default function DynamicForm({ schema, onSubmit, loading }: DynamicFormPr
           <input
             type="text"
             {...commonProps}
-            value={value}
+            value={String(value || '')}
             onChange={(e) => handleFieldChange(field.key, e.target.value)}
           />
         );

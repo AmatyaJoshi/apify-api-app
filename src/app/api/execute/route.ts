@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApifyClient } from 'apify-client';
 
+interface ExecuteRequest {
+  actorId: string;
+  input?: Record<string, unknown>;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = request.headers.get('x-apify-token');
@@ -12,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { actorId, input } = await request.json();
+    const { actorId, input }: ExecuteRequest = await request.json();
 
     console.log('Executing actor:', { actorId, input });
 
@@ -46,10 +51,11 @@ export async function POST(request: NextRequest) {
         }
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error executing actor:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to execute actor';
     return NextResponse.json(
-      { error: error.message || 'Failed to execute actor' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

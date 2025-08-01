@@ -118,7 +118,7 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
     }
   }, [urlInput]);
 
-  const handleExecute = async (input?: any) => {
+  const handleExecute = async (input?: Record<string, unknown>) => {
     try {
       setExecuting(true);
       setError('');
@@ -207,8 +207,9 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
       }
 
       setResult(data.data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setExecuting(false);
     }
@@ -336,7 +337,7 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
             </div>
 
             <div className="flex-1 min-h-0">
-              {inputMode === 'form' && (
+              {inputMode === 'form' && actor.inputSchema && (
                 <DynamicForm
                   schema={actor.inputSchema}
                   onSubmit={handleExecute}
@@ -389,11 +390,7 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
                       value={jsonInput}
                       onChange={(e) => setJsonInput(e.target.value)}
                       rows={12}
-                      className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all font-mono text-sm scrollbar-thin"
-                      style={{
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: '#475569 #1e293b'
-                      }}
+                      className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-white placeholder-gray-400 backdrop-blur-sm transition-all font-mono text-sm scrollbar-thin scrollbar-track-slate-800 scrollbar-thumb-slate-600"
                       placeholder='{&#10;  "startUrls": [{"url": "https://example.com"}],&#10;  "maxPagesPerCrawl": 10,&#10;  "maxCrawlDepth": 1&#10;}'
                     />
                     <p className="mt-2 text-xs text-gray-400">Enter the complete JSON configuration for the actor</p>

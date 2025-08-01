@@ -1,0 +1,16 @@
+# Build output
+.next/
+out/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Generated files
+*.d.ts

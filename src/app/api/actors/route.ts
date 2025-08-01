@@ -17,18 +17,19 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: actors.items.map(actor => ({
+      data: actors.items.map((actor) => ({
         id: actor.id,
         name: actor.name,
-        title: (actor as any).title || actor.name,
-        description: (actor as any).description || 'No description available',
+        title: (actor as unknown as Record<string, unknown>).title as string || actor.name,
+        description: (actor as unknown as Record<string, unknown>).description as string || 'No description available',
         username: actor.username,
       }))
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching actors:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch actors';
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch actors' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

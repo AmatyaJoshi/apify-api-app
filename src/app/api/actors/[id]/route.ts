@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApifyClient } from 'apify-client';
+import { JsonSchema } from '@/types/apify';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
+}
+
+interface ActorWithSchema {
+  id: string;
+  name: string;
+  title?: string;
+  description?: string;
+  inputSchema?: JsonSchema;
+  [key: string]: unknown;
+}
+
+interface StoreActorResponse {
+  id: string;
+  name: string;
+  title?: string;
+  description?: string;
 }
 
 export async function GET(
@@ -32,11 +49,12 @@ export async function GET(
       const actor = await client.actor(id).get();
       
       if (actor) {
+        const actorWithSchema = actor as unknown as ActorWithSchema;
         console.log('Found actor with user token:', { 
           id: actor.id, 
           name: actor.name, 
           title: actor.title,
-          hasInputSchema: !!(actor as any).inputSchema 
+          hasInputSchema: !!actorWithSchema.inputSchema 
         });
         
         return NextResponse.json({
@@ -46,7 +64,7 @@ export async function GET(
             name: actor.name,
             title: actor.title || actor.name,
             description: actor.description || 'No description available',
-            inputSchema: (actor as any).inputSchema || {
+            inputSchema: actorWithSchema.inputSchema || {
               title: "Actor Input",
               type: "object",
               schemaVersion: 1,
@@ -63,8 +81,9 @@ export async function GET(
           }
         });
       }
-    } catch (userTokenError: any) {
-      console.log('Actor not found with user token, trying public access:', userTokenError.message);
+    } catch (userTokenError: unknown) {
+      const errorMessage = userTokenError instanceof Error ? userTokenError.message : 'Unknown error';
+      console.log('Actor not found with user token, trying public access:', errorMessage);
     }
     
     // If not found with user token, try without authentication for public actors
@@ -74,11 +93,12 @@ export async function GET(
       const actor = await publicClient.actor(id).get();
       
       if (actor) {
+        const actorWithSchema = actor as unknown as ActorWithSchema;
         console.log('Found public actor:', { 
           id: actor.id, 
           name: actor.name, 
           title: actor.title,
-          hasInputSchema: !!(actor as any).inputSchema 
+          hasInputSchema: !!actorWithSchema.inputSchema 
         });
         
         return NextResponse.json({
@@ -88,7 +108,7 @@ export async function GET(
             name: actor.name,
             title: actor.title || actor.name,
             description: actor.description || 'No description available',
-            inputSchema: (actor as any).inputSchema || {
+            inputSchema: actorWithSchema.inputSchema || {
               title: "Actor Input",
               type: "object",
               schemaVersion: 1,
@@ -105,8 +125,9 @@ export async function GET(
           }
         });
       }
-    } catch (publicError: any) {
-      console.log('Public actor access also failed:', publicError.message);
+    } catch (publicError: unknown) {
+      const errorMessage = publicError instanceof Error ? publicError.message : 'Unknown error';
+      console.log('Public actor access also failed:', errorMessage);
     }
 
     // If both fail, try to get the actor from the store API
@@ -115,7 +136,7 @@ export async function GET(
       const storeResponse = await fetch(`https://api.apify.com/v2/store/${encodeURIComponent(id)}`);
       
       if (storeResponse.ok) {
-        const storeActor = await storeResponse.json();
+        const storeActor: StoreActorResponse = await storeResponse.json();
         console.log('Found actor in store:', storeActor);
         
         return NextResponse.json({
@@ -142,8 +163,9 @@ export async function GET(
           }
         });
       }
-    } catch (storeError: any) {
-      console.log('Store API access failed:', storeError.message);
+    } catch (storeError: unknown) {
+      const errorMessage = storeError instanceof Error ? storeError.message : 'Unknown error';
+      console.log('Store API access failed:', errorMessage);
     }
 
     console.log('Actor not found in any source:', id);
@@ -151,10 +173,11 @@ export async function GET(
       { error: `Actor '${id}' not found or not accessible` },
       { status: 404 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching actor schema:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch actor schema';
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch actor schema' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

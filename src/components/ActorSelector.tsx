@@ -55,7 +55,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
   };
 
   useEffect(() => {
-    let filtered = actors.filter(actor =>
+    const filtered = actors.filter(actor =>
       actor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       actor.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       actor.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -65,7 +65,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
     if (searchTerm.trim()) {
       filtered.sort((a, b) => {
         // Calculate relevance scores
-        const getRelevanceScore = (actor: any) => {
+        const getRelevanceScore = (actor: Actor) => {
           const searchLower = searchTerm.toLowerCase();
           const titleLower = actor.title.toLowerCase();
           const nameLower = actor.name.toLowerCase();
@@ -132,7 +132,8 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
     try {
       setLoading(true);
       setError('');
-      let response, data;
+      
+      let response;
       if (view === 'my') {
         response = await fetch('/api/actors', {
           headers: {
@@ -142,13 +143,15 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
       } else {
         response = await fetch('/api/store-actors');
       }
-      data = await response.json();
+      
+      const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch actors');
       }
       setActors(data.data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -173,8 +176,9 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
       }
 
       onActorSelect(data.data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
     }
   };
 
@@ -298,7 +302,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
             </div>
             <p className="text-2xl font-medium text-white mb-2">No Actors Available</p>
             <p className="text-slate-400 mb-6 max-w-md mx-auto">
-              You don't have any actors yet. Create your first actor to get started with web scraping.
+              You don&apos;t have any actors yet. Create your first actor to get started with web scraping.
             </p>
           </div>
         </main>
