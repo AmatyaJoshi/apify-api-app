@@ -1,25 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApifyClient } from 'apify-client';
-import { JsonSchema } from '@/types/apify';
+import { JsonSchema, JsonSchemaProperty } from '@/types/apify';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
-}
-
-interface ActorWithSchema {
-  id: string;
-  name: string;
-  title?: string;
-  description?: string;
-  inputSchema?: JsonSchema;
-  [key: string]: unknown;
-}
-
-interface StoreActorResponse {
-  id: string;
-  name: string;
-  title?: string;
-  description?: string;
 }
 
 export async function GET(
@@ -255,7 +239,7 @@ export async function GET(
               const exampleInput = JSON.parse(actor.exampleRunInput.body);
               if (typeof exampleInput === 'object' && exampleInput !== null) {
                 console.log('Generating schema from example input');
-                const newProperties: Record<string, any> = {};
+                const newProperties: Record<string, JsonSchemaProperty> = {};
 
                 Object.keys(exampleInput).forEach(key => {
                   const value = exampleInput[key];

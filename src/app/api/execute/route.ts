@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
     const client = new ApifyClient({ token: apiKey });
 
     // Process input to ensure required fields are present
-    let processedInput = input || {};
+    const processedInput = { ...(input || {}) };
 
     // Fix pseudoUrls format - Web Scraper requires objects, not strings
     if (processedInput.pseudoUrls && Array.isArray(processedInput.pseudoUrls)) {
-      processedInput.pseudoUrls = processedInput.pseudoUrls.map((item: any) => {
+      processedInput.pseudoUrls = processedInput.pseudoUrls.map((item: unknown) => {
         if (typeof item === 'string') {
           return { purl: item };
         }
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure startUrls is an array of objects with url property
     if (processedInput.startUrls && Array.isArray(processedInput.startUrls)) {
-      processedInput.startUrls = processedInput.startUrls.map((item: any) => {
+      processedInput.startUrls = processedInput.startUrls.map((item: unknown) => {
         if (typeof item === 'string') {
           return { url: item };
         }

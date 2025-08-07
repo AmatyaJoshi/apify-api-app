@@ -75,7 +75,6 @@ export default function Home() {
               <div className="w-full flex-1 flex flex-col justify-center items-center">
                 <ApiKeyForm
                   onSubmit={handleApiKeySubmit}
-                  onBack={handleBackToLanding}
                 />
               </div>
             </div>

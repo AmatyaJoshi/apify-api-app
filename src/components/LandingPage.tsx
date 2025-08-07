@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, useInView, useAnimation } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Play, Zap, Globe, Code, ArrowRight, Star, Users, Activity } from 'lucide-react';
+import { Play, Zap, Globe, Code, ArrowRight, Activity } from 'lucide-react';
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -40,7 +40,6 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       const statNumbers = document.querySelectorAll('.stat-number');
       const featuresSection = document.querySelector('.features-section');
       const stepsSection = document.querySelector('.steps-section');
-      const statsSection = document.querySelector('.stats-section');
 
       // Hero background animation - only if elements exist
       if (heroBg && heroSection) {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 interface StoreActor {
     id: string;
@@ -16,7 +16,7 @@ interface ApiResponse {
     };
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
     try {
         console.log('Fetching store actors...');
 

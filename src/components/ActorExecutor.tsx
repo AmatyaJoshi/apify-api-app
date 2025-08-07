@@ -165,7 +165,7 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
                 try {
                     processedInput = JSON.parse(jsonInput);
                     console.log('Using JSON input:', processedInput);
-                } catch (parseError) {
+                } catch {
                     throw new Error('Invalid JSON format. Please check your input.');
                 }
             } else if (inputMode === 'url') {
@@ -574,8 +574,7 @@ export default function ActorExecutor({ actor, apiKey, onBack }: ActorExecutorPr
 }
 
 // Enhanced Results Display Component
-function ResultsDisplay({ results }: { results: any[] }) {
-    const [showRawData, setShowRawData] = useState(false);
+function ResultsDisplay({ results }: { results: Record<string, unknown>[] }) {
 
     const copyToClipboard = async (text: string) => {
         try {
@@ -597,7 +596,7 @@ function ResultsDisplay({ results }: { results: any[] }) {
         URL.revokeObjectURL(url);
     };
 
-    const formatDataSize = (data: any) => {
+    const formatDataSize = (data: Record<string, unknown> | Record<string, unknown>[]) => {
         const str = JSON.stringify(data);
         const bytes = new Blob([str]).size;
         if (bytes < 1024) return `${bytes} B`;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff, ArrowLeft, Shield, Key } from 'lucide-react';
+import { Eye, EyeOff, Shield, Key } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
@@ -9,10 +9,9 @@ import { motion } from "framer-motion";
 
 interface ApiKeyFormProps {
   onSubmit: (apiKey: string) => void;
-  onBack?: () => void;
 }
 
-export default function ApiKeyForm({ onSubmit, onBack }: ApiKeyFormProps) {
+export default function ApiKeyForm({ onSubmit }: ApiKeyFormProps) {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [error, setError] = useState('');
