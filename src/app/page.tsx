@@ -61,8 +61,7 @@ export default function Home() {
                   onClick={handleBackToLanding}
                   className="absolute left-0 top-1/2 transform -translate-y-1/2 flex items-center text-gray-300 hover:text-white transition-all duration-200 group bg-slate-800/30 hover:bg-slate-700/40 px-3 py-2 rounded-lg border border-slate-600/30 hover:border-slate-500/50 backdrop-blur-sm"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                  <span className="text-sm font-medium">Back</span>
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 </button>
                 <div className="text-center">
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-1 sm:mb-2 leading-tight">
@@ -74,8 +73,8 @@ export default function Home() {
                 </div>
               </div>
               <div className="w-full flex-1 flex flex-col justify-center items-center">
-                <ApiKeyForm 
-                  onSubmit={handleApiKeySubmit} 
+                <ApiKeyForm
+                  onSubmit={handleApiKeySubmit}
                   onBack={handleBackToLanding}
                 />
               </div>
@@ -83,21 +82,23 @@ export default function Home() {
           </div>
         </main>
       )}
-      
+
       {appState === 'selector' && (
-        <ActorSelector 
-          apiKey={apiKey} 
+        <ActorSelector
+          apiKey={apiKey}
           onActorSelect={handleActorSelect}
           onApiKeyChange={handleApiKeyChange}
         />
       )}
-      
+
       {appState === 'executor' && selectedActor && (
-        <ActorExecutor 
-          actor={selectedActor} 
-          apiKey={apiKey}
-          onBack={handleBack}
-        />
+        <main className="min-h-screen w-full bg-gradient-to-br from-slate-900 via-gray-900 to-black overflow-auto">
+          <ActorExecutor
+            actor={selectedActor}
+            apiKey={apiKey}
+            onBack={handleBack}
+          />
+        </main>
       )}
     </>
   );

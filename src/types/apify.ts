@@ -59,7 +59,7 @@ export interface User {
     avatarUrl: string;
     website: string;
   };
-  plan: string | { id: string; tier: string; [key: string]: unknown };
+  plan: string | { id: string; tier: string;[key: string]: unknown };
   usage: {
     monthlyUsageUsd?: number;
     monthlyLimitUsd?: number;

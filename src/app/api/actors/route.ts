@@ -4,7 +4,7 @@ import { ApifyClient } from 'apify-client';
 export async function GET(request: NextRequest) {
   try {
     const apiKey = request.headers.get('x-apify-token');
-    
+
     if (!apiKey) {
       return NextResponse.json(
         { error: 'API key is required' },

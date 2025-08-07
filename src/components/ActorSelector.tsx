@@ -40,7 +40,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
           'x-apify-token': apiKey,
         },
       });
-      
+
       if (response.ok) {
         const userData = await response.json();
         console.log('Fetched user data:', userData.data);
@@ -70,33 +70,33 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
           const titleLower = actor.title.toLowerCase();
           const nameLower = actor.name.toLowerCase();
           const descLower = actor.description.toLowerCase();
-          
+
           // Exact title match gets highest score
           if (titleLower === searchLower) return 1000;
           if (nameLower === searchLower) return 900;
-          
+
           // Title starts with search term
           if (titleLower.startsWith(searchLower)) return 800;
           if (nameLower.startsWith(searchLower)) return 700;
-          
+
           // Title includes search term
           if (titleLower.includes(searchLower)) return 600;
           if (nameLower.includes(searchLower)) return 500;
-          
+
           // Description includes search term
           if (descLower.includes(searchLower)) return 100;
-          
+
           return 0;
         };
 
         const scoreA = getRelevanceScore(a);
         const scoreB = getRelevanceScore(b);
-        
+
         // If relevance scores are different, sort by relevance (higher first)
         if (scoreA !== scoreB) {
           return scoreB - scoreA;
         }
-        
+
         // If relevance scores are equal, apply secondary sort
         switch (sortBy) {
           case 'name':
@@ -132,7 +132,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
     try {
       setLoading(true);
       setError('');
-      
+
       let response;
       if (view === 'my') {
         response = await fetch('/api/actors', {
@@ -143,7 +143,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
       } else {
         response = await fetch('/api/store-actors');
       }
-      
+
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch actors');
@@ -159,9 +159,13 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
 
   const handleActorClick = async (actor: Actor) => {
     try {
+      setError(''); // Clear any previous errors
+
       // Encode the actor ID to handle special characters like slashes
       const encodedId = encodeURIComponent(actor.id);
-      
+
+      console.log('Fetching schema for actor:', actor.name, 'ID:', actor.id);
+
       // Fetch actor schema
       const response = await fetch(`/api/actors/${encodedId}`, {
         headers: {
@@ -174,6 +178,12 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
       if (!response.ok) {
         throw new Error(data.error || 'Failed to fetch actor schema');
       }
+
+      console.log('Actor schema fetched successfully:', {
+        actorName: data.data.name,
+        hasInputSchema: !!data.data.inputSchema,
+        schemaPropertiesCount: Object.keys(data.data.inputSchema?.properties || {}).length
+      });
 
       onActorSelect(data.data);
     } catch (err: unknown) {
@@ -320,15 +330,14 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                 onClick={onApiKeyChange}
                 className="flex items-center text-gray-300 hover:text-white transition-colors duration-200 group mr-4"
               >
-                <ArrowLeft className="w-5 h-5 mr-2 transition-transform group-hover:-translate-x-1" />
-                <span className="text-sm font-medium">Back</span>
+                <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
               </button>
               <div>
                 <h1 className="text-2xl font-bold text-white">Apify Actor Executor</h1>
                 <p className="text-sm text-slate-400">Execute web scraping actors with intelligent configuration</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               {/* User Avatar and Info */}
               {user && (
@@ -346,7 +355,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                   </div>
                 </div>
               )}
-              
+
               {userLoading && (
                 <div className="flex items-center gap-3 bg-slate-800/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-slate-600/50">
                   <div className="w-8 h-8 rounded-full bg-slate-700 animate-pulse"></div>
@@ -356,7 +365,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                   </div>
                 </div>
               )}
-              
+
               <button
                 onClick={onApiKeyChange}
                 className="flex items-center text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2.5 rounded-xl border border-slate-600/50 backdrop-blur-sm transition-all duration-200 group"
@@ -374,21 +383,19 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div className="flex gap-3">
             <button
-              className={`px-6 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${
-                view === 'my' 
-                  ? 'bg-blue-600 text-white shadow-blue-500/25' 
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
-              }`}
+              className={`px-6 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${view === 'my'
+                ? 'bg-blue-600 text-white shadow-blue-500/25'
+                : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
+                }`}
               onClick={() => setView('my')}
             >
               My Actors
             </button>
             <button
-              className={`px-6 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${
-                view === 'store' 
-                  ? 'bg-purple-600 text-white shadow-purple-500/25' 
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
-              }`}
+              className={`px-6 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${view === 'store'
+                ? 'bg-purple-600 text-white shadow-purple-500/25'
+                : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
+                }`}
               onClick={() => setView('store')}
             >
               Apify Store
@@ -409,7 +416,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                 className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-slate-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500/50 text-white placeholder-slate-400 backdrop-blur-sm transition-all shadow-lg"
               />
             </div>
-            
+
             {/* Sort Dropdown */}
             <div className="relative">
               <select
@@ -442,7 +449,7 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                 className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:border-blue-500/50 hover:bg-slate-700/40 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/10 flex flex-col h-full"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-300" />
-                
+
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
@@ -458,11 +465,11 @@ export default function ActorSelector({ apiKey, onActorSelect, onApiKeyChange }:
                     </div>
                     <Settings className="w-6 h-6 text-slate-500 ml-4 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
                   </div>
-                  
+
                   <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed mb-4 flex-grow">
                     {actor.description || "No description available"}
                   </p>
-                  
+
                   <div className="flex items-center justify-between text-xs text-slate-500 mt-auto">
                     <span>Click to configure</span>
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
